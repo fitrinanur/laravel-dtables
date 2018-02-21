@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Contact;
+use function MongoDB\BSON\toJSON;
 use Yajra\DataTables\Contracts\DataTable;
 use Yajra\Datatables\Datatables;
 
@@ -15,8 +16,13 @@ class ContactController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function index()
+    public function index(Contact $contact, Request $request)
     {
+    //    $contact = Contact::all();
+    //    if($request->ajax())
+    //    {
+    //        return Datatables::of($contact)->toJson();
+    //    };
         return view('contact.index');
     }
 
@@ -36,9 +42,14 @@ class ContactController extends Controller
      * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
      */
-    public function store(Request $request)
+    public function store(Request $request, Contact $contact)
     {
-        //
+        $data = [
+            'name' => $request['name'],
+            'email' => $request['email']
+        ];
+
+        return Contact::create($data);
     }
 
     /**
@@ -49,7 +60,9 @@ class ContactController extends Controller
      */
     public function show($id)
     {
-        //
+        return Contact::find($id);
+
+
     }
 
     /**
@@ -60,7 +73,9 @@ class ContactController extends Controller
      */
     public function edit($id)
     {
-        
+        $contact = Contact::find($id);
+
+        return $contact;
     }
 
     /**
@@ -72,7 +87,13 @@ class ContactController extends Controller
      */
     public function update(Request $request, $id)
     {
-        //
+        $contact = Contact::find($id);
+        $contact->name = $request['name'];
+        $contact->email = $request['email'];
+        $contact->update();
+
+
+        return $contact;
     }
 
     /**
@@ -83,7 +104,7 @@ class ContactController extends Controller
      */
     public function destroy($id)
     {
-        //
+        Contact::destroy($id);
     }
 
     public function apiContact()
@@ -92,7 +113,8 @@ class ContactController extends Controller
 
         return datatables::of($contact)
             ->addColumn('action', function ($contact){
-                return '<a href="#" class="btn btn-info btn-xs"><i class="glyphicon glyphicon-eye-open"></i>Show</a>' .
+                return
+                    '<a onclick="showData('.$contact->id.')" class="btn btn-info btn-xs"><i class="glyphicon glyphicon-eye-open"></i>Show</a>' .
                     '<a onclick="editForm('.$contact->id.')" class="btn btn-primary btn-xs">
                     <i class="glyphicon glyphicon-edit"></i>Edit</a>'.
                     '<a onclick="deleteData('.$contact->id.')" class="btn btn-danger btn-xs">
