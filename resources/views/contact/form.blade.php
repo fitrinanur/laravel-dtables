@@ -1,7 +1,7 @@
 <div class="modal fade" id="modal-form" tabindex="1" role="dialog" data-backdrop="static" aria-hidden="true">
     <div class="modal-dialog dialog-lg">
         <div class="modal-content">
-            <form  action="" method="post" class="form-horizontal" data-toggle="validator">
+            <form  action="" method="post" class="form-horizontal" data-toggle="validator" enctype="multipart/form-data">
                 {{ csrf_field() }}
                 {{ method_field('POST') }}
                 <div class="modal-header">
@@ -27,6 +27,14 @@
                             <span class="help-block with-error"></span>
                         </div>
                     </div>
+                    <div class="form-group">
+                        <label for="photo" class="col-md-3 control-label">photo</label>
+                        <div class="col-md-6">
+                            <input type="file" id="photo" name="photo" class="form-control" autofocus>
+                            <span class="help-block with-error"></span>
+                        </div>
+                    </div>
+
                 </div>
                 <div class="modal-footer">
                     <button class="btn btn-primary btn-save" type="submit">Submit</button>

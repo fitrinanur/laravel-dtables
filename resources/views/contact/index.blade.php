@@ -21,7 +21,8 @@
                                 <th width="30">No</th>
                                 <th>Name</th>
                                 <th>Email</th>
-                                <th></th>
+                                <th>Photo</th>
+                                <th>Action</th>
                             </tr>
                         </thead>
                         <tbody></tbody>
@@ -43,6 +44,7 @@
                         { data: 'id' , name: 'id'},
                         { data: 'name' , name: 'name' },
                         { data: 'email' , name: 'email'},
+                        { data: 'photo' , name: 'show_photo'},
                         { data: 'action' , name: 'action' , orderable : false, searchable:false }
                       ]
                     });
@@ -113,6 +115,7 @@
                     url: "{{ url('contact') }}" + '/' + id,
                     type:"POST",
                     data : {'_method' : 'DELETE','_token':csrf_token},
+	                dataType: "JSON",
                     success: function (data) {
                         table.ajax.reload();
 	                    swal({
@@ -144,7 +147,11 @@
             	$.ajax({
                   url : url,
                   type: 'POST',
-                  data: $('#modal-form form').serialize(),
+//                  data: $('#modal-form form').serialize(),
+                  data : new FormData($('#modal-form form')[0]),
+                  contentType : false,
+                  prosesData : false,
+                  dataType : 'JSON',
                   success : function ($data) {
                     $('#modal-form').modal('hide');
                     table.ajax.reload();

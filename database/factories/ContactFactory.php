@@ -6,5 +6,6 @@ $factory->define(App\Contact::class, function (Faker $faker) {
     return [
         'name'  => $faker->name,
         'email' => $faker->unique()->safeEmail,
+        'photo' => null,
     ];
 });

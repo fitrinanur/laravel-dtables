@@ -44,12 +44,20 @@ class ContactController extends Controller
      */
     public function store(Request $request, Contact $contact)
     {
-        $data = [
-            'name' => $request['name'],
-            'email' => $request['email']
-        ];
+       $input = $request->all();
+       $input['photo'] = null;
 
-        return Contact::create($data);
+       if($request->hasFile('photo')){
+           $input['photo'] = '/upload/photo' . str_slug($input['name'],'-').'.'.$request->photo->getClientOriginalExtension();
+           $request->photo->move(public_path('/upload/photo'),$input['photo']);
+       }
+
+
+        Contact::create($input);
+
+        return response()->json([
+            'success' => true
+        ]);
     }
 
     /**
@@ -73,7 +81,7 @@ class ContactController extends Controller
      */
     public function edit($id)
     {
-        $contact = Contact::find($id);
+        $contact = Contact::findOrFail($id);
 
         return $contact;
     }
@@ -87,13 +95,24 @@ class ContactController extends Controller
      */
     public function update(Request $request, $id)
     {
-        $contact = Contact::find($id);
-        $contact->name = $request['name'];
-        $contact->email = $request['email'];
-        $contact->update();
+        $input = $request->all();
+        $contact = Contact::findOrFail($id);
 
+        $input['photo'] = $contact->photo;
 
-        return $contact;
+        if($request->hasFile('photo'))
+        {
+            if($contact->photo != NULL){
+                unlink(public_path($contact->photo));
+                $input['photo'] = 'upload/photo' . str_slug($input['name'],'-').'.'.$request->photo->getClientOriginalExtension();
+                $request->photo->move(public_path('/upload/photo'),$input['photo']);
+            }
+        }
+        $contact->update($input);
+
+        return response()->json([
+            'success' => true,
+        ]);
     }
 
     /**
@@ -104,14 +123,30 @@ class ContactController extends Controller
      */
     public function destroy($id)
     {
+        $contact = Contact::findOrFail($id);
+
+
+        if($contact->photo != NULL){
+            unlink(public_path($contact->photo));
+        }
         Contact::destroy($id);
+
+        return response()->json([
+           'success' => true
+        ]);
     }
 
     public function apiContact()
     {
         $contact =  Contact::all();
 
-        return datatables::of($contact)
+        return Datatables::of($contact)
+            ->addColumn('show_photo', function ($contact){
+                if($contact->photo == NULL){
+                    return 'No Image';
+                }
+                return '<img class="rounded-square" width="50" height="50" src = "'. url(asset($contact->photo)) .' " alt ="">';
+            })
             ->addColumn('action', function ($contact){
                 return
                     '<a onclick="showData('.$contact->id.')" class="btn btn-info btn-xs"><i class="glyphicon glyphicon-eye-open"></i>Show</a>' .
@@ -119,6 +154,6 @@ class ContactController extends Controller
                     <i class="glyphicon glyphicon-edit"></i>Edit</a>'.
                     '<a onclick="deleteData('.$contact->id.')" class="btn btn-danger btn-xs">
                     <i class="glyphicon glyphicon-trash"></i>Delete</a>';
-            })->make(true);
+            })->rawColumns(['show_photo','action'])->make(true);
     }
 }
